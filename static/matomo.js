@@ -1,14 +1,14 @@
-var _paq = (window._paq = window._paq || []);
-_paq.push(["trackPageView"]);
-_paq.push(["enableLinkTracking"]);
+var _paq = (window._paq = window._paq || [])
+_paq.push(['trackPageView'])
+_paq.push(['enableLinkTracking']);
 (function () {
-  var u = "//matomo.skating.team/";
-  _paq.push(["setTrackerUrl", u + "matomo.php"]);
-  _paq.push(["setSiteId", "3"]);
+  var u = atob('Ly9tYXRvbW8udGplcmt3b3Vkc21hLmNvbS8=')
+  _paq.push(['setTrackerUrl', u + 'matomo.php'])
+  _paq.push(['setSiteId', '4'])
   var d = document,
-    g = d.createElement("script"),
-    s = d.getElementsByTagName("script")[0];
-  g.async = true;
-  g.src = u + "matomo.js";
-  s.parentNode.insertBefore(g, s);
-})();
+    g = d.createElement('script'),
+    s = d.getElementsByTagName('script')[0]
+  g.async = true
+  g.src = u + 'matomo.js'
+  s.parentNode.insertBefore(g, s)
+})()
