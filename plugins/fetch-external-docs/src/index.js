@@ -48,7 +48,7 @@ module.exports = function (context, opts) {
     },
 
     async contentLoaded({ content }) {
-      const { repoUrl, sidebarContent, sidebarPath, branch = "master" } = opts;
+      const { repoUrl, sidebarContent, sidebarPath, targetPath, branch = "master" } = opts;
 
       await mkdirp(targetPath);
 
