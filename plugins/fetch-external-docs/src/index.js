@@ -1,7 +1,12 @@
 const mkdirp = require("mkdirp");
 const simpleGit = require("simple-git");
-const { readdirSync, existsSync, readFileSync, writeFileSync } = require("fs");
-const { execSync } = require("child_process");
+const {
+  readdirSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} = require("fs");
 
 module.exports = function (context, opts) {
   return {
@@ -9,21 +14,23 @@ module.exports = function (context, opts) {
 
     async loadContent() {
       console.log("Fetching examples docs");
-      const { tmpDir, remoteUrl, targetPath } = opts;
+      const {
+        tmpDir,
+        remoteUrl,
+        targetPath,
+        branch = "develop",
+      } = opts;
 
-      execSync(`rm -rf ${tmpDir}`);
+      rmSync(tmpDir, { recursive: true, force: true });
       await mkdirp(tmpDir);
       const git = simpleGit(tmpDir);
 
       if (await git.checkIsRepo()) {
         console.log(tmpDir, "exists, pulling from remote");
-        await git.fetch().reset("hard", ["origin/develop"]);
+        await git.fetch("origin").reset("hard", [`origin/${branch}`]);
       } else {
         console.log("Pulling from remote", remoteUrl);
-        await git
-          .init()
-          .addRemote("origin", remoteUrl)
-          .pull("origin", "develop");
+        await git.init().addRemote("origin", remoteUrl).pull("origin", branch);
       }
 
       return readdirSync(`${tmpDir}/examples`).reduce((acc, curr) => {
@@ -41,26 +48,22 @@ module.exports = function (context, opts) {
     },
 
     async contentLoaded({ content }) {
-      const { repoUrl, sidebarContent, sidebarPath } = opts;
+      const { repoUrl, sidebarContent, sidebarPath, branch = "master" } = opts;
+
+      await mkdirp(targetPath);
 
       Object.entries(content).forEach(([key, { docContent, docPath }]) => {
-        const docHeader = `---\nid: ${key}\ntitle: ${key}\ncustom_edit_url: ${repoUrl}/edit/master/examples/${key}/README.md\n---\n\n`;
+        const docHeader = `---\nid: ${key}\ntitle: ${key}\ncustom_edit_url: ${repoUrl}/edit/${branch}/examples/${key}/README.md\n---\n\n`;
         writeFileSync(docPath, docHeader.concat(docContent));
       });
 
-      sidebarContent.sidebar.Examples = Object.keys(content).map(
-        (key) => `examples/${key}`
-      );
+      const sidebar = sidebarContent.sidebar || {};
+      sidebar.Examples = Object.keys(content).map((key) => `examples/${key}`);
+      sidebarContent.sidebar = sidebar;
       writeFileSync(
         sidebarPath,
         `module.exports=${JSON.stringify(sidebarContent, null, 2)}`
       );
     },
-
-    // configureWebpack(config, isServer) {
-    //   // Modify internal webpack config. If returned value is an Object, it
-    //   // will be merged into the final config using webpack-merge;
-    //   // If the returned value is a function, it will receive the config as the 1st argument and an isServer flag as the 2nd argument.
-    // },
   };
 };
